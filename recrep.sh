@@ -1,5 +1,7 @@
 #!/bin/sh
 
+# easyb 2011
+
 if [ $# -lt 3 ]; then
     echo "usage: `basename $0` 'file_regexp' old new [-d]"
     exit
