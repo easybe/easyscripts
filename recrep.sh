@@ -3,24 +3,18 @@
 # easyb 2011
 
 if [ $# -lt 3 ]; then
-    echo "usage: `basename $0` 'file_regexp' old new [-d]"
+    echo "usage: `basename $0` OLD NEW [-d]"
     exit
 fi
 
-REGEXP="$1"
-OLD=$2
-NEW=$3
-OPT=$4
+OLD=$1
+NEW=$2
+OPT=$3
 
-find . -type f -name "$REGEXP" -print |
+grep -r -l --exclude-dir=.svn $OLD * |
     while read FILE
     do
-        #echo "processing $FILE:"
-
-        FOUND=`grep "$OLD" $FILE`
-        if [ "x$FOUND" != "x" ]; then
-            echo "matches in $FILE"
-        fi
+        echo "processing: $FILE"
 
         if [ "x$OPT" == "x" ]; then
             sed "s/$OLD/$NEW/i;" "$FILE" >"$FILE.tmp"
