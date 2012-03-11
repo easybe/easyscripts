@@ -58,9 +58,14 @@ foreach $_ (@ARGV) {
    $oldfnm = $_;
    $dirpath = dirname($oldfnm) . "/";
    
-   $_ =~ m/0?(\d)[eExX]?(\d{2})/;
-   $epnr = $1 . $2;
+   $_ =~ m/S0?(\d)[eExX](\d{2})/;
    
+   if(!($1 && $2))
+   {
+     print("2nd try\n");
+     $_ =~ m/0?(\d)[eExX]?(\d{2})/;
+   }
+   $epnr = $1 . $2;
    $_ =~ m/(\.\w+$)/;
    $ext = $1;
    
