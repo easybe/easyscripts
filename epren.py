@@ -98,14 +98,13 @@ class Main(object):
         name = self._getVal(show, "name")
         showId = self._getVal(show, "showid")
         seasonCount = self._getVal(show, "seasons")
-
-        print "You have selected: " + name
     
         if self._seasonNo:
             default = self._seasonNo
         else:
             default = seasonCount
-        self._seasonNo =  self._promptForNumber("Select an season", str(default))
+        self._seasonNo = self._promptForNumber("Select the '{0}' season".format(name),
+                                               str(default))
 
         xmlDoc = self._parseUrl(epUrl + showId)
 
