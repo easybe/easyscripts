@@ -19,7 +19,7 @@ class Main(object):
 
     def __init__(self, argv = None):
 
-        usage = "usage: %prog [options] keyword"
+        usage = "usage: %prog [options] name of show"
         parser = optparse.OptionParser(usage=usage)
         parser.add_option("-d", "--dry-run",
                           dest="dry",
@@ -30,7 +30,7 @@ class Main(object):
         options, remainder = parser.parse_args()
         self._dry = options.dry
         if remainder:
-            self._searchStr = remainder[0]
+            self._searchStr = "%20".join(remainder)
         else:
             parser.print_help()
             self._exit("")
@@ -39,6 +39,7 @@ class Main(object):
             print "*** Dry run requested ***"
 
     def run(self):
+
         self._fetchNames()
 
         currentDir = os.getcwd()
@@ -54,7 +55,7 @@ class Main(object):
 
                 if self._names.has_key(key):
                     name = self._names[key] + ext
-                    print "renaming '{0:s}' to '{1:s}'".format(file, name)
+                    print u"renaming '{0}' to '{1}'".format(file, name)
                     if not self._dry: os.rename(file, name)
 
     def _fetchNames(self):
@@ -70,8 +71,9 @@ class Main(object):
         i = 0
         for show in shows:
             name = self._getVal(show, "name")
-            print "[{0:d}] {1:s}".format(i, name)
+            print u"[{0:d}] {1}".format(i, name)
             i += 1
+        print "[q] Never mind..."
 
         index = self._requestNumber("Select a show")
 
@@ -88,15 +90,20 @@ class Main(object):
 
         seasons = xmlDoc.getElementsByTagName("Season")
         if len(seasons) == 0:
-            self._exit("No seasons found")
+            self._exit("No season data available")
 
-        for season in seasons:
-            if season.hasAttribute("no"):
-                no = season.getAttribute("no")
+        season = False
+        for s in seasons:
+            if s.hasAttribute("no"):
+                no = s.getAttribute("no")
                 if no == seasonNo:
+                    season = s
                     break;
 
-        episodes = season.getElementsByTagName("episode")
+        if season:
+            episodes = season.getElementsByTagName("episode")
+        else:
+            self._exit("No data for season {0:d} available".format(seasonNo))
 
         self._names = dict()
         for episode in episodes:
@@ -109,7 +116,7 @@ class Main(object):
     def _requestNumber(self, msg, default="0"):
         answ = ""
         while not answ.isdigit():
-            answ = raw_input("{0:s} [{1:s}]: ".format(msg, default))
+            answ = raw_input("{0} [{1}]: ".format(msg, default))
             if answ == "q":
                 self._exit("bye")
             if not answ:
