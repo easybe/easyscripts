@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# Requires Python 2.6 or newer
 
 """Episode Rename
 
@@ -20,21 +21,37 @@ class Main(object):
 
     def __init__(self, argv = None):
 
-        usage = "usage: %prog [options] name of show"
+        usage = "usage: %prog [options] [name of show]"
         parser = optparse.OptionParser(usage=usage)
         parser.add_option("-d", "--dry-run",
                           dest="dry",
                           default=False,
                           action="store_true",
                           )
+        parser.add_option("-p", "--path",
+                          dest="path",
+                          metavar="DIRECTORY"
+                          )
 
         options, remainder = parser.parse_args()
         self._dry = options.dry
+        self._seasonNo = None
+
+        if options.path:
+            self._path = os.path.abspath(options.path)
+        else:
+            self._path = os.getcwd()
+
         if remainder:
             self._searchStr = urllib.quote(" ".join(remainder))
-        else:
-            parser.print_help()
-            self._exit("")
+        elif self._path:
+            info = self._getInfoFromPath()
+            if info:
+                self._searchStr = urllib.quote(" ".join(info[0]))
+                self._seasonNo = info[1]
+            else:
+                parser.print_help()
+                self._exit("")
 
         if self._dry:
             print "*** Dry run requested ***"
@@ -42,17 +59,16 @@ class Main(object):
     def run(self):
 
         self._fetchNames()
-
-        currentDir = os.getcwd()
-
-        files = os.listdir(currentDir)
+        os.chdir(self._path)
+        files = os.listdir(os.getcwd())
         for file in files:
-            m = re.search('[Ss](\d*)[Ee](\d*)', file)
+            m = re.search('[Ss](\d+)[Ee](\d+)', file)
             if not m:
-                 m = re.search('(\d*)x(\d*)', file)
+                 m = re.search('(\d+)x(\d+)', file)
             if m:
+                #import pdb; pdb.set_trace()
                 key = "{0:d}{1:02d}".format(int(m.group(1)), int(m.group(2)))
-                ext = re.search('(\..*)$', file).group(1)
+                ext = re.search('(\.\w*)$', file).group(1)
 
                 if self._names.has_key(key):
                     name = self._names[key] + ext
@@ -84,8 +100,12 @@ class Main(object):
         seasonCount = self._getVal(show, "seasons")
 
         print "You have selected: " + name
-
-        seasonNo =  self._promptForNumber("Select an season", seasonCount)
+    
+        if self._seasonNo:
+            default = self._seasonNo
+        else:
+            default = seasonCount
+        self._seasonNo =  self._promptForNumber("Select an season", str(default))
 
         xmlDoc = self._parseUrl(epUrl + showId)
 
@@ -93,26 +113,35 @@ class Main(object):
         if len(seasons) == 0:
             self._exit("No season data available")
 
-        season = False
+        season = None
         for s in seasons:
             if s.hasAttribute("no"):
-                if int(s.getAttribute("no")) == seasonNo:
+                if int(s.getAttribute("no")) == self._seasonNo:
                     season = s
                     break;
 
         if season:
             episodes = season.getElementsByTagName("episode")
         else:
-            self._exit("No data for season {0:d} available".format(seasonNo))
+            self._exit("No data for season {0:d} available".format(self._seasonNo))
 
         self._names = dict()
         for episode in episodes:
             epNum = int(self._getVal(episode, "seasonnum"))
-            numberStr = "{0:d}{1:02d}".format(seasonNo, epNum)
+            numberStr = "{0:d}{1:02d}".format(self._seasonNo, epNum)
             title = self._getVal(episode, "title")
+            title = re.sub('/', '-', title)
             filename = numberStr + " - " + title
             self._names[numberStr] = filename
-
+            
+    def _getInfoFromPath(self):
+        d = os.path.basename(self._path)
+        m = re.search('(.*) - Season (\d*)', d)
+        if m:
+            return (m.group(1), int(m.group(2)))
+            
+        return None
+        
     def _promptForNumber(self, msg, default="0"):
         answ = ""
         while not answ.isdigit():
