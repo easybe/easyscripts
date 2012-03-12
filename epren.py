@@ -10,6 +10,7 @@ easyb 2012
 import sys
 import re
 import os
+import urllib
 import urllib2
 import optparse
 from xml.dom import minidom
@@ -30,7 +31,7 @@ class Main(object):
         options, remainder = parser.parse_args()
         self._dry = options.dry
         if remainder:
-            self._searchStr = "%20".join(remainder)
+            self._searchStr = urllib.quote(" ".join(remainder))
         else:
             parser.print_help()
             self._exit("")
@@ -46,11 +47,11 @@ class Main(object):
 
         files = os.listdir(currentDir)
         for file in files:
-            m = re.search('S0?(\d)[Ee](\d{2})', file)
+            m = re.search('[Ss](\d*)[Ee](\d*)', file)
             if not m:
-                 m = re.search('0?(\d)x(\d{2})', file)
+                 m = re.search('(\d*)x(\d*)', file)
             if m:
-                key = m.group(1) + m.group(2)
+                key = "{0:d}{1:02d}".format(int(m.group(1)), int(m.group(2)))
                 ext = re.search('(\..*)$', file).group(1)
 
                 if self._names.has_key(key):
@@ -75,7 +76,7 @@ class Main(object):
             i += 1
         print "[q] Never mind..."
 
-        index = self._requestNumber("Select a show")
+        index = self._promptForNumber("Select a show")
 
         show = shows[index]
         name = self._getVal(show, "name")
@@ -84,7 +85,7 @@ class Main(object):
 
         print "You have selected: " + name
 
-        seasonNo =  self._requestNumber("Select an season", seasonCount)
+        seasonNo =  self._promptForNumber("Select an season", seasonCount)
 
         xmlDoc = self._parseUrl(epUrl + showId)
 
@@ -95,8 +96,7 @@ class Main(object):
         season = False
         for s in seasons:
             if s.hasAttribute("no"):
-                no = s.getAttribute("no")
-                if no == seasonNo:
+                if int(s.getAttribute("no")) == seasonNo:
                     season = s
                     break;
 
@@ -113,7 +113,7 @@ class Main(object):
             filename = numberStr + " - " + title
             self._names[numberStr] = filename
 
-    def _requestNumber(self, msg, default="0"):
+    def _promptForNumber(self, msg, default="0"):
         answ = ""
         while not answ.isdigit():
             answ = raw_input("{0} [{1}]: ".format(msg, default))
