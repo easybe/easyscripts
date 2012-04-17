@@ -19,7 +19,7 @@ grep -r -I -l --exclude={#*,.*} --exclude-dir=.* $OLD * 2>/dev/null |
         echo "${OPT}processing: $FILE"
 
         if [ "x$OPT" == "x" ]; then
-            sed "s/$OLD/$NEW/g ;" "$FILE" >"$FILE.tmp"
+            sed "s^$OLD^$NEW^g ;" "$FILE" >"$FILE.tmp" && \
             mv "$FILE.tmp" "$FILE"
         fi
     done
