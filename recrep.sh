@@ -13,7 +13,7 @@ if [  "x$3" != "x"  ]; then
     OPT="[SIM] "
 fi
 
-grep -r -I -l --exclude={#*,.*} $OLD * 2>/dev/null |
+grep -r -I -l --exclude={#*,.*} --exclude-dir=.* $OLD * 2>/dev/null |
     while read FILE
     do
         echo "${OPT}processing: $FILE"
