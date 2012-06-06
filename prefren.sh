@@ -13,6 +13,6 @@ new=$2
 for f in *; do
     com=${f#$old}
 
-    echo $f | grep -q $old && \
+    echo $f | grep -q "^$old" && \
     $SIM mv $f $new$com
 done
