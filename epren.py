@@ -18,7 +18,6 @@ from xml.dom import minidom
 
 
 class Main(object):
-
     def __init__(self, argv = None):
         usage = "usage: %prog [options] [name of show]"
         parser = optparse.OptionParser(usage=usage)
@@ -81,24 +80,8 @@ class Main(object):
             answ = self._prompt("Rename '{0}' season {1:d} ?".format(
                 showName, self._seasonNo), 'y')
 
-        self._fetchEpisodes()
+        self._fetchEpisodeTitles()
         self._rename()
-
-    def _rename(self):
-        os.chdir(self._path)
-        files = os.listdir(os.getcwd())
-        for file in files:
-            m = re.search('[Ss](\d+)[Ee](\d+)', file)
-            if not m:
-                 m = re.search('(\d+)x(\d+)', file)
-            if m:
-                key = "{0:d}{1:02d}".format(int(m.group(1)), int(m.group(2)))
-                ext = re.search('(\.\w*)$', file).group(1)
-
-                if key in self._names:
-                    name = self._names[key] + ext
-                    print u"renaming '{0}' to '{1}'".format(file, name)
-                    if not self._dry: os.rename(file, name)
 
     def _fetchShows(self):
         infoUrl = "http://www.tvrage.com/feeds/search.php?show="
@@ -108,7 +91,7 @@ class Main(object):
         if len(self._shows) == 0:
             self._exit("Could not find requested show")
 
-    def _fetchEpisodes(self):
+    def _fetchEpisodeTitles(self):
         epUrl = "http://www.tvrage.com/feeds/episode_list.php?sid="
 
         showId = self._getVal(self._show, "showid")
@@ -125,20 +108,36 @@ class Main(object):
                     season = s
                     break;
 
-        if season:
+        if season is not None:
             episodes = season.getElementsByTagName("episode")
         else:
             self._exit("No data for season {0:d} available".format(
                 self._seasonNo))
 
-        self._names = dict()
+        self._titles = dict()
         for episode in episodes:
             epNum = int(self._getVal(episode, "seasonnum"))
             numberStr = "{0:d}{1:02d}".format(self._seasonNo, epNum)
             title = self._getVal(episode, "title")
             title = re.sub('/', '-', title)
             filename = numberStr + " - " + title
-            self._names[numberStr] = filename
+            self._titles[numberStr] = filename
+            
+    def _rename(self):
+        os.chdir(self._path)
+        files = os.listdir(os.getcwd())
+        for file in files:
+            m = re.search('[Ss](\d+)[Ee](\d+)', file)
+            if not m:
+                 m = re.search('(\d+)x(\d+)', file)
+            if m:
+                key = "{0:d}{1:02d}".format(int(m.group(1)), int(m.group(2)))
+                ext = re.search('(\.\w*)$', file).group(1)
+
+                if key in self._titles:
+                    name = self._titles[key] + ext
+                    print u"renaming '{0}' to '{1}'".format(file, name)
+                    if not self._dry: os.rename(file, name)
 
     def _getInfoFromPath(self):
         d = os.path.basename(self._path)
