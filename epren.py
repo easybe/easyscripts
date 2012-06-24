@@ -80,7 +80,7 @@ class Main(object):
             answ = self._prompt("Rename '{0}' season {1:d} ?".format(
                 showName, self._seasonNo), 'y')
 
-        self._fetchEpisodeTitles()
+        self._fetchEpisodeNames()
         self._rename()
 
     def _fetchShows(self):
@@ -91,7 +91,7 @@ class Main(object):
         if len(self._shows) == 0:
             self._exit("Could not find requested show")
 
-    def _fetchEpisodeTitles(self):
+    def _fetchEpisodeNames(self):
         epUrl = "http://www.tvrage.com/feeds/episode_list.php?sid="
 
         showId = self._getVal(self._show, "showid")
@@ -114,14 +114,14 @@ class Main(object):
             self._exit("No data for season {0:d} available".format(
                 self._seasonNo))
 
-        self._titles = dict()
+        self._names = dict()
         for episode in episodes:
             epNum = int(self._getVal(episode, "seasonnum"))
             numberStr = "{0:d}{1:02d}".format(self._seasonNo, epNum)
             title = self._getVal(episode, "title")
             title = re.sub('/', '-', title)
             filename = numberStr + " - " + title
-            self._titles[numberStr] = filename
+            self._names[numberStr] = filename
             
     def _rename(self):
         os.chdir(self._path)
@@ -134,8 +134,8 @@ class Main(object):
                 key = "{0:d}{1:02d}".format(int(m.group(1)), int(m.group(2)))
                 ext = re.search('(\.\w*)$', file).group(1)
 
-                if key in self._titles:
-                    name = self._titles[key] + ext
+                if key in self._names:
+                    name = self._names[key] + ext
                     print u"renaming '{0}' to '{1}'".format(file, name)
                     if not self._dry: os.rename(file, name)
 
