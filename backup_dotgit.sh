@@ -9,5 +9,5 @@ new=$(date +"%Y-%m-%dT%H:%M:%S")
 mkdir -p $DEST/$new
 
 find $SRC -type d \( -name ".git" -o -name ".git_externals" \) -print0 | \
-    rsync -pavr --delete --link-dest=$DEST/$old --files-from=- --from0 \
+    rsync -pavrl --link-dest=$DEST/$old --files-from=- --from0 \
     / $DEST/$new
