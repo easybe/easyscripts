@@ -24,8 +24,10 @@ class Main(object):
             for name in filenames:
                 paths.append(os.path.join(root, name))
 
+        history = dict()
+
         for path in paths:
-            print "processing " + path
+            print "Processing " + path
 
             oldFile = open(path, 'r')
             # Create temp file
@@ -36,18 +38,35 @@ class Main(object):
                 names = filter(None, re.findall('(\w*[a-z][A-Z]\w*)*', line))
 
                 for name in names:
-                    newName = self._convert(name)
-                    answ = raw_input("replace {0} with {1} (y, n, c, q) [y]: "
-                        .format(name, newName))
-                    if not answ:
+                    if name in history:
+                        newName = history[name]
                         answ = 'y'
+                    else:
+                        newName = self._convert(name)
+                        answ = ''
+                        answ = raw_input(
+                            "Replace {0} with {1} (y, n, e) [y]: "
+                            .format(name, newName))
+
+                        if answ == 'e':
+                            tmpName = ''
+                            tmpName = raw_input(
+                                "Enter the new name [{0}]: "
+                                .format(newName))
+                            if tmpName:
+                                newName = tmpName
+                                answ = 'y'
+
+                        if not answ:
+                            answ = 'y'
+
                     if answ == 'y':
+                        history[name] = newName
                         line = line.replace(name, newName)
+                    else:
+                        history[name] = name
 
                 newFile.write(line)
-
-                if answ == 'q' or answ == 'c':
-                    break
 
             newFile.close()
             os.close(fhTmp)
@@ -56,9 +75,6 @@ class Main(object):
             os.remove(path)
             # Move new file
             shutil.move(pathTmp, path)
-
-            if answ == 'q':
-                quit()
 
     def _convert(self, name):
         s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
