@@ -132,7 +132,7 @@ class Main(object):
                 m = re.search('(\d+)x(\d+)', file)
             if not m:
                 m = re.search('^(\d+)(\d{2})', file)
-            else:
+            if m:
                 key = "{0:d}{1:02d}".format(int(m.group(1)), int(m.group(2)))
                 ext = re.search('(\.\w*)$', file).group(1)
 
