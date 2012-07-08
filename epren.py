@@ -129,7 +129,7 @@ class Main(object):
         for file in files:
             m = re.search('[Ss](\d+)[Ee](\d+)', file)
             if not m:
-                 m = re.search('(\d+)x(\d+)', file)
+                m = re.search('(\d+)x(\d+)', file)
             if not m:
                 m = re.search('^(\d+)(\d{2})', file)
             else:
