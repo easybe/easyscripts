@@ -37,7 +37,7 @@ class Main(object):
 
                 for name in names:
                     newName = self._convert(name)
-                    answ = raw_input("replace {0} with {1} [y]: "
+                    answ = raw_input("replace {0} with {1} (y, n, c, q) [y]: "
                         .format(name, newName))
                     if not answ:
                         answ = 'y'
@@ -46,7 +46,7 @@ class Main(object):
 
                 newFile.write(line)
 
-                if answ == 'q' or answ == 's':
+                if answ == 'q' or answ == 'c':
                     break
 
             newFile.close()
@@ -60,11 +60,9 @@ class Main(object):
             if answ == 'q':
                 quit()
 
-
     def _convert(self, name):
         s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
         return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
-
 
 if __name__ == "__main__":
     main = Main()
