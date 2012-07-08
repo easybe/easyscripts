@@ -130,14 +130,17 @@ class Main(object):
             m = re.search('[Ss](\d+)[Ee](\d+)', file)
             if not m:
                  m = re.search('(\d+)x(\d+)', file)
-            if m:
+            if not m:
+                m = re.search('^(\d+)(\d{2})', file)
+            else:
                 key = "{0:d}{1:02d}".format(int(m.group(1)), int(m.group(2)))
                 ext = re.search('(\.\w*)$', file).group(1)
 
                 if key in self._names:
                     name = self._names[key] + ext
-                    print u"renaming '{0}' to '{1}'".format(file, name)
-                    if not self._dry: os.rename(file, name)
+                    if file != name:
+                        print u"renaming '{0}' to '{1}'".format(file, name)
+                        if not self._dry: os.rename(file, name)
 
     def _getInfoFromPath(self):
         d = os.path.basename(self._path)
