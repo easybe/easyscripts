@@ -27,13 +27,19 @@ class Main(object):
         history = dict()
 
         for path in paths:
-            print "Processing " + path
+            answ = raw_input("Edit {0} ?\n(y, n, q) [y]: ".format(path))
+            if not answ:
+                answ = 'y'
+
+            if answ == 'q':
+                quit()
+            elif answ != 'y':
+                continue
 
             oldFile = open(path, 'r')
             # Create temp file
             fhTmp, pathTmp = tempfile.mkstemp()
             newFile = open(pathTmp, 'w')
-
 
             lineNumber = 1
             for line in oldFile:
