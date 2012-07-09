@@ -34,6 +34,8 @@ class Main(object):
             fhTmp, pathTmp = tempfile.mkstemp()
             newFile = open(pathTmp, 'w')
 
+
+            lineNumber = 1
             for line in oldFile:
                 names = filter(None, re.findall('(\w*[a-z][A-Z]\w*)*', line))
 
@@ -44,21 +46,24 @@ class Main(object):
                     else:
                         newName = self._convert(name)
                         answ = ''
-                        answ = raw_input(
-                            "Replace {0} with {1} (y, n, e) [y]: "
-                            .format(name, newName))
+                        while not (answ == 'y' or answ == 'n'):
+                            answ = raw_input(
+                                "Replace {0} with {1} (y, n, e, l) [y]: "
+                                .format(name, newName))
 
-                        if answ == 'e':
-                            tmpName = ''
-                            tmpName = raw_input(
-                                "Enter the new name [{0}]: "
-                                .format(newName))
-                            if tmpName:
-                                newName = tmpName
+                            if answ == 'e':
+                                tmpName = newName
+                                tmpName = raw_input(
+                                    "Enter the new name [{0}]: "
+                                    .format(newName))
+                                if tmpName:
+                                    newName = tmpName
                                 answ = 'y'
+                            elif answ == 'l':
+                                print "{0}: {1}".format(lineNumber, line)
 
-                        if not answ:
-                            answ = 'y'
+                            elif not answ:
+                                answ = 'y'
 
                     if answ == 'y':
                         history[name] = newName
@@ -67,6 +72,7 @@ class Main(object):
                         history[name] = name
 
                 newFile.write(line)
+                lineNumber += 1
 
             newFile.close()
             os.close(fhTmp)
