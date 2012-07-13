@@ -1,7 +1,9 @@
 #!/bin/sh
 
-SRC=/local-home
-DEST=/tmp/bu
+USER=buehler
+
+SRC=/local-home/$USER
+DEST=/netshares/hal/local-home/$USER/bu
 
 old=$(ls -1 $DEST | tail -n 1)
 new=$(date +"%Y-%m-%dT%H:%M:%S")
