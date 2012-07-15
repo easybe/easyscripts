@@ -9,5 +9,5 @@ new=$(date +"%Y-%m-%dT%H:%M:%S")
 mkdir -p $DEST/$new
 
 find $SRC -type d -name ".git" -print0 2>/dev/null | \
-    rsync -pavrl --link-dest=$DEST/$old --files-from=- --from0 \
+    rsync -arv --link-dest=$DEST/$old --files-from=- --from0 \
     / $DEST/$new
