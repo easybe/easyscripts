@@ -6,6 +6,7 @@ DEST=/tmp/bu
 old=$(ls -1 $DEST | tail -n 1)
 new=$(date +"%Y-%m-%dT%H:%M:%S")
 
+echo "Backing up to $DEST/$new ..."
 mkdir -p $DEST/$new
 
 find $SRC -type d -name ".git" -print0 2>/dev/null | \
