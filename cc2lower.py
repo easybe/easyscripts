@@ -10,21 +10,44 @@ import re
 import sys
 import tempfile
 import shutil
-
+import optparse
 
 class Main(object):
     def __init__(self, argv = None):
-        pass
+        self.history = {}
+
+        parser = optparse.OptionParser()
+        parser.add_option("-i", "--ignore-file", dest="ignoreFilenames", action="append",
+                          help="file with names to ignore")
+
+        options, args = parser.parse_args(argv)
+
+        names = []
+
+        for filename in options.ignoreFilenames:
+            ignoreFile = open(filename, 'r')
+            for line in ignoreFile:
+                names += filter(None, re.findall('(\w*[a-z][A-Z]\w*)*', line))
+
+            #print len(names)
+
+            # Remove duplicates
+            d = {}
+            for n in names:
+                d[n] = 1
+            names = list(d.keys())
+
+            for name in names:
+                self.history[name] = name
 
     def run(self):
+
         d = os.getcwd()
 
         paths = []
         for root, dirnames, filenames in os.walk(d):
             for name in filenames:
                 paths.append(os.path.join(root, name))
-
-        history = dict()
 
         for path in paths:
             answ = raw_input("Edit {0} ?\n(y, n, q) [y]: ".format(path))
@@ -46,8 +69,8 @@ class Main(object):
                 names = filter(None, re.findall('(\w*[a-z][A-Z]\w*)*', line))
 
                 for name in names:
-                    if name in history:
-                        newName = history[name]
+                    if name in self.history:
+                        newName = self.history[name]
                         answ = 'y'
                     else:
                         newName = self._convert(name)
@@ -72,10 +95,10 @@ class Main(object):
                                 answ = 'y'
 
                     if answ == 'y':
-                        history[name] = newName
+                        self.history[name] = newName
                         line = line.replace(name, newName)
                     else:
-                        history[name] = name
+                        self.history[name] = name
 
                 newFile.write(line)
                 lineNumber += 1
