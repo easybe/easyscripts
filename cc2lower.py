@@ -12,35 +12,26 @@ import tempfile
 import shutil
 import optparse
 
+
 class Main(object):
     def __init__(self, argv = None):
-        self.history = {}
+        self._history = {}
 
-        parser = optparse.OptionParser()
+        parser = optparse.OptionParser(add_help_option=True)
+        parser.add_option("-l", "--load-hist", dest="loadFilenames", action="append",
+                          help="a history file which will be used")
         parser.add_option("-i", "--ignore-file", dest="ignoreFilenames", action="append",
                           help="file with names to ignore")
+        parser.add_option("-d", "--dump-hist", dest="dumpFilename",
+                          help="file to dump history to")
+        parser.add_option("-a", "--all-files", dest="all", action="store_true",
+                          help="process all files")
 
-        options, args = parser.parse_args(argv)
-
-        names = []
-
-        for filename in options.ignoreFilenames:
-            ignoreFile = open(filename, 'r')
-            for line in ignoreFile:
-                names += filter(None, re.findall('(\w*[a-z][A-Z]\w*)*', line))
-
-            #print len(names)
-
-            # Remove duplicates
-            d = {}
-            for n in names:
-                d[n] = 1
-            names = list(d.keys())
-
-            for name in names:
-                self.history[name] = name
+        self._options, args = parser.parse_args(argv)
 
     def run(self):
+
+        self._loadHistory()
 
         d = os.getcwd()
 
@@ -49,13 +40,16 @@ class Main(object):
             for name in filenames:
                 paths.append(os.path.join(root, name))
 
+        answ = ''
         for path in paths:
-            answ = raw_input("Edit {0} ?\n(y, n, q) [y]: ".format(path))
+            if not self._options.all:
+                answ = raw_input("Edit {0} ?\n(y, n, q) [y]: ".format(path))
+
             if not answ:
                 answ = 'y'
 
             if answ == 'q':
-                quit()
+                break
             elif answ != 'y':
                 continue
 
@@ -69,8 +63,8 @@ class Main(object):
                 names = filter(None, re.findall('(\w*[a-z][A-Z]\w*)*', line))
 
                 for name in names:
-                    if name in self.history:
-                        newName = self.history[name]
+                    if name in self._history:
+                        newName = self._history[name]
                         answ = 'y'
                     else:
                         newName = self._convert(name)
@@ -95,10 +89,10 @@ class Main(object):
                                 answ = 'y'
 
                     if answ == 'y':
-                        self.history[name] = newName
+                        self._history[name] = newName
                         line = line.replace(name, newName)
                     else:
-                        self.history[name] = name
+                        self._history[name] = name
 
                 newFile.write(line)
                 lineNumber += 1
@@ -110,6 +104,36 @@ class Main(object):
             os.remove(path)
             # Move new file
             shutil.move(pathTmp, path)
+
+        if self._options.dumpFilename:
+            self._dumpHistory()
+
+        print "bye"
+
+    def _loadHistory(self):
+        if self._options.loadFilenames is not None:
+            for filename in self._options.loadFilenames:
+                histFile = open(filename, 'r')
+                for line in histFile:
+                    (key, _, val) = line.rstrip('\n').partition(':')
+                    if val:
+                        self._history[key] = val
+                histFile.close()
+
+        if self._options.ignoreFilenames is not None:
+            for filename in self._options.ignoreFilenames:
+                ignoreFile = open(filename, 'r')
+                for line in ignoreFile:
+                    name = line.rstrip('\n')
+                    if name:
+                        self._history[name] = name
+                ignoreFile.close()
+
+    def _dumpHistory(self):
+        dumpFile = open(self._options.dumpFilename, 'w')
+
+        for k, v in sorted(self._history.iteritems()):
+            dumpFile.write(k + ':' + v + '\n')
 
     def _convert(self, name):
         s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
