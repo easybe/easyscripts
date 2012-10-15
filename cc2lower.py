@@ -100,6 +100,8 @@ class Main(object):
             newFile.close()
             os.close(fhTmp)
             oldFile.close()
+            mode = os.stat(path).st_mode & 0777
+            os.chmod(pathTmp, mode)
             # Remove original file
             os.remove(path)
             # Move new file
