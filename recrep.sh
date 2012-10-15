@@ -13,12 +13,12 @@ if [  "x$3" != "x"  ]; then
     OPT="[SIM] "
 fi
 
-grep -r -I -l --exclude={#*,.*} --exclude-dir=.* $OLD * 2>/dev/null |
+find . -type f | xargs grep -I -l --exclude={#*,.*} --exclude-dir=.* $OLD 2>/dev/null |
     while read FILE
     do
         echo "${OPT}processing: $FILE"
 
-        if [ "x$OPT" == "x" ]; then
+        if [ -z "$OPT" ]; then
             sed "s^$OLD^$NEW^g ;" "$FILE" >"$FILE.tmp" && \
             mv "$FILE.tmp" "$FILE"
         fi
