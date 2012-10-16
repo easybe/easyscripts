@@ -14,12 +14,13 @@ if [  "x$3" != "x"  ]; then
 fi
 
 find . -type f | xargs grep -I -l --exclude={#*,.*} --exclude-dir=.* $OLD 2>/dev/null |
-    while read FILE
-    do
-        echo "${OPT}processing: $FILE"
+    while read f; do
+        echo "${OPT}processing: $f"
 
         if [ -z "$OPT" ]; then
-            sed "s^$OLD^$NEW^g ;" "$FILE" >"$FILE.tmp" && \
-            mv "$FILE.tmp" "$FILE"
+            mode=$(stat -c"%a" $f)
+            sed "s^$OLD^$NEW^g" "$f" >"$f.tmp" && \
+            mv "$f.tmp" "$f"
+            chmod $mode $f
         fi
     done
