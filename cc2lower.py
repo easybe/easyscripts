@@ -63,6 +63,8 @@ class Main(object):
                 names = filter(None, re.findall('(\w*[a-z][A-Z]\w*)*', line))
 
                 for name in names:
+                    if name.startswith("0x"):
+                        continue
                     if name in self._history:
                         newName = self._history[name]
                         answ = 'y'
