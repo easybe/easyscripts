@@ -26,6 +26,8 @@ class Main(object):
                           help="file to dump history to")
         parser.add_option("-a", "--all-files", dest="all", action="store_true",
                           help="process all files")
+        parser.add_option("-f", "--files", dest="files", action="append",
+                          help="files to process")
 
         self._options, args = parser.parse_args(argv)
 
@@ -33,12 +35,15 @@ class Main(object):
 
         self._loadHistory()
 
-        d = os.getcwd()
-
         paths = []
-        for root, dirnames, filenames in os.walk(d):
-            for name in filenames:
-                paths.append(os.path.join(root, name))
+
+        if self._options.files:
+            paths += self._options.files
+        else:
+            d = os.getcwd()
+            for root, dirnames, filenames in os.walk(d):
+                for name in filenames:
+                    paths.append(os.path.join(root, name))
 
         answ = ''
         for path in paths:
@@ -72,6 +77,7 @@ class Main(object):
                         newName = self._convert(name)
                         answ = ''
                         while not (answ == 'y' or answ == 'n'):
+                            print "{0}: {1}".format(lineNumber, line)
                             answ = raw_input(
                                 "Replace {0} with {1} (y, n, e, l) [y]: "
                                 .format(name, newName))
@@ -84,8 +90,6 @@ class Main(object):
                                 if tmpName:
                                     newName = tmpName
                                 answ = 'y'
-                            elif answ == 'l':
-                                print "{0}: {1}".format(lineNumber, line)
 
                             elif not answ:
                                 answ = 'y'
@@ -112,7 +116,7 @@ class Main(object):
         if self._options.dumpFilename:
             self._dumpHistory()
 
-        print "bye"
+        print "done"
 
     def _loadHistory(self):
         if self._options.loadFilenames is not None:
