@@ -3,24 +3,38 @@
 # easyb 2011
 
 if [ $# -lt 2 ]; then
-    echo "usage: `basename $0` OLD NEW [-s]"
+    echo "usage: `basename $0` OLD NEW [-s|-w]"
     exit
 fi
 
-OLD=$1
-NEW=$2
-if [  "x$3" != "x"  ]; then
-    OPT="[SIM] "
-fi
+old=$1
+shift
+new=$1
+shift
+echo "$@" | grep -q "\-s"
+[ $? -eq 0 ] && sim="true"
+echo "$@" | grep -q "\-w"
+[ $? -eq 0 ] && word="true"
 
-find . -type f | xargs grep -I -l --exclude={#*,.*} --exclude-dir=.* $OLD 2>/dev/null |
-    while read f; do
-        echo "${OPT}processing: $f"
+files=$(find . -type f \( ! -regex '.*/\..*' \) | \
+    xargs grep $([ $word ] && echo "-w") -I -l \
+    --exclude={*#*,*.*} --exclude-dir=.* $old 2>/dev/null)
 
-        if [ -z "$OPT" ]; then
-            mode=$(stat -c"%a" $f)
-            sed "s^$OLD^$NEW^g" "$f" >"$f.tmp" && \
-            mv "$f.tmp" "$f"
-            chmod $mode $f
+for f in $files; do
+    [ "$sim" ] && SIM="[SIM] "
+    echo "${SIM}processing: $f"
+
+    if [ -z "$sim" ]; then
+        mode=$(stat -c"%a" $f)
+        if [ "$word" ]; then
+            oldRE='\b'$old'\b'
+            newRE="$new"
+        else
+            oldRE="$new"
+            newRE="$old"
         fi
-    done
+        sed "s:$oldRE:$newRE:g" "$f" >"$f.tmp" && \
+            mv "$f.tmp" "$f"
+        chmod $mode $f
+    fi
+done
