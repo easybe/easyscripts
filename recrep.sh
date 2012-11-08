@@ -19,9 +19,8 @@ echo "$@" | grep -q "\-f"
 if [ $? -eq 0 ]; then
     files=$(echo "$@" | sed -r 's:.*-f ([[:alnum:]\/\.]+).*:\1:g' 2>/dev/null)
 else
-    files=$(find . -type f \( ! -regex '.*/\..*' \) | \
-        xargs grep $([ $word ] && echo "-w") -I -l \
-        --exclude={*#*,*.*} --exclude-dir=.* $old 2>/dev/null)
+    files=$(find . -type f \( ! -regex '.*/\..*' \) \( ! -regex '.*/#.*' \) | \
+        xargs grep $([ $word ] && echo "-w") -I -l $old 2>/dev/null)
 fi
 
 for f in $files; do
