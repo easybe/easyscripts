@@ -40,13 +40,23 @@ class Main(object):
         if self._options.files:
             paths += self._options.files
         else:
-            d = os.getcwd()
-            for root, dirnames, filenames in os.walk(d):
+            cwd = os.getcwd()
+            for root, dirnames, filenames in os.walk(cwd):
+                filenames = [f for f in filenames if not f[0] == '.']
+                dirnames[:] = [d for d in dirnames if not d[0] == '.']
+
                 for name in filenames:
                     paths.append(os.path.join(root, name))
 
         answ = ''
         for path in paths:
+            fileName = os.path.basename(path)
+            if re.search(r'^[\.#_]', fileName):
+                continue
+
+            if re.search(r'^\w+$|(\.(sh|py|cpp|hpp|c|h|)$)', fileName) is None:
+                continue
+
             if not self._options.all:
                 answ = raw_input("Edit {0} ?\n(y, n, q) [y]: ".format(path))
 
