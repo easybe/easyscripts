@@ -36,9 +36,9 @@ class Main(object):
         self._seasonNo = None
 
         if options.path:
-            self._path = os.path.abspath(options.path)
+            self._path = unicode(os.path.abspath(options.path))
         else:
-            self._path = os.getcwd()
+            self._path = os.getcwdu()
 
         if remainder:
             self._searchStr = urllib.quote(" ".join(remainder))
@@ -122,10 +122,10 @@ class Main(object):
             title = re.sub('/', '-', title)
             filename = numberStr + " - " + title
             self._names[numberStr] = filename
-            
+
     def _rename(self):
         os.chdir(self._path)
-        files = os.listdir(os.getcwd())
+        files = os.listdir(os.getcwdu())
         for file in files:
             m = re.search('[Ss](\d+)[Ee](\d+)', file)
             if not m:
@@ -154,7 +154,7 @@ class Main(object):
         answ = ''
         while not answ.isdigit():
             answ = self._prompt(msg, default)
-            
+
         return int(answ)
 
     def _prompt(self, msg, default='y'):
