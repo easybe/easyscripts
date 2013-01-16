@@ -33,7 +33,7 @@ class Main(object):
 
         options, remainder = parser.parse_args()
         self._dry = options.dry
-        self._seasonNo = None
+        self._season_no = None
 
         if options.path:
             self._path = unicode(os.path.abspath(options.path))
@@ -41,12 +41,12 @@ class Main(object):
             self._path = os.getcwdu()
 
         if remainder:
-            self._searchStr = urllib.quote(" ".join(remainder))
+            self._search_str = urllib.quote(" ".join(remainder))
         elif self._path:
-            info = self._getInfoFromPath()
+            info = self._get_info_from_path()
             if info:
-                self._searchStr = urllib.quote(" ".join(info[0]))
-                self._seasonNo = info[1]
+                self._search_str = urllib.quote(" ".join(info[0]))
+                self._season_no = info[1]
             else:
                 parser.print_help()
                 self._exit("")
@@ -55,56 +55,56 @@ class Main(object):
             print "*** Dry run requested ***"
 
     def run(self):
-        self._fetchShows()
+        self._fetch_shows()
         self._show = self._shows[0]
-        showName = self._getVal(self._show, "name")
+        show_name = self._get_val(self._show, "name")
         answ = 'n'
-        if self._seasonNo is not None:
+        if self._season_no is not None:
             answ = self._prompt("Rename '{0}' season {1:d} ?".format(
-                showName, self._seasonNo), 'y')
+                show_name, self._season_no), 'y')
 
         while answ != 'y':
             i = 0
             for show in self._shows:
-                name = self._getVal(show, "name")
+                name = self._get_val(show, "name")
                 print u"[{0:d}] {1}".format(i, name)
                 i += 1
             print "[q] Never mind..."
 
-            showIndex = self._promptForNumber("Select a show")
-            self._show = self._shows[showIndex]
-            showName = self._getVal(self._show, "name")
-            seasonCount = self._getVal(self._show, "seasons")
-            self._seasonNo = self._promptForNumber(
-                "Select a season", str(seasonCount))
+            show_index = self._prompt_for_number("Select a show")
+            self._show = self._shows[show_index]
+            show_name = self._get_val(self._show, "name")
+            season_count = self._get_val(self._show, "seasons")
+            self._season_no = self._prompt_for_number(
+                "Select a season", str(season_count))
             answ = self._prompt("Rename '{0}' season {1:d} ?".format(
-                showName, self._seasonNo), 'y')
+                show_name, self._season_no), 'y')
 
-        self._fetchEpisodeNames()
+        self._fetch_episode_names()
         self._rename()
 
-    def _fetchShows(self):
-        infoUrl = "http://www.tvrage.com/feeds/search.php?show="
+    def _fetch_shows(self):
+        info_url = "http://www.tvrage.com/feeds/search.php?show="
 
-        xmlDoc = self._parseUrl(infoUrl + self._searchStr)
-        self._shows = xmlDoc.getElementsByTagName("show")
+        xml_doc = self._parse_url(info_url + self._search_str)
+        self._shows = xml_doc.getElementsByTagName("show")
         if len(self._shows) == 0:
             self._exit("Could not find requested show")
 
-    def _fetchEpisodeNames(self):
-        epUrl = "http://www.tvrage.com/feeds/episode_list.php?sid="
+    def _fetch_episode_names(self):
+        ep_url = "http://www.tvrage.com/feeds/episode_list.php?sid="
 
-        showId = self._getVal(self._show, "showid")
-        xmlDoc = self._parseUrl(epUrl + showId)
+        show_id = self._get_val(self._show, "showid")
+        xml_doc = self._parse_url(ep_url + show_id)
 
-        seasons = xmlDoc.getElementsByTagName("Season")
+        seasons = xml_doc.getElementsByTagName("Season")
         if len(seasons) == 0:
             self._exit("No season data available")
 
         season = None
         for s in seasons:
             if s.hasAttribute("no"):
-                if int(s.getAttribute("no")) == self._seasonNo:
+                if int(s.getAttribute("no")) == self._season_no:
                     season = s
                     break;
 
@@ -112,16 +112,16 @@ class Main(object):
             episodes = season.getElementsByTagName("episode")
         else:
             self._exit("No data for season {0:d} available".format(
-                self._seasonNo))
+                self._season_no))
 
         self._names = dict()
         for episode in episodes:
-            epNum = int(self._getVal(episode, "seasonnum"))
-            numberStr = "{0:d}{1:02d}".format(self._seasonNo, epNum)
-            title = self._getVal(episode, "title")
+            ep_num = int(self._get_val(episode, "seasonnum"))
+            number_str = "{0:d}{1:02d}".format(self._season_no, ep_num)
+            title = self._get_val(episode, "title")
             title = re.sub('/', '-', title)
-            filename = numberStr + " - " + title
-            self._names[numberStr] = filename
+            filename = number_str + " - " + title
+            self._names[number_str] = filename
 
     def _rename(self):
         os.chdir(self._path)
@@ -142,7 +142,7 @@ class Main(object):
                         print u"renaming '{0}' to '{1}'".format(file, name)
                         if not self._dry: os.rename(file, name)
 
-    def _getInfoFromPath(self):
+    def _get_info_from_path(self):
         d = os.path.basename(self._path)
         m = re.search('(.*) - Season (\d*)', d)
         if m:
@@ -150,7 +150,7 @@ class Main(object):
 
         return None
 
-    def _promptForNumber(self, msg, default='0'):
+    def _prompt_for_number(self, msg, default='0'):
         answ = ''
         while not answ.isdigit():
             answ = self._prompt(msg, default)
@@ -167,10 +167,10 @@ class Main(object):
 
         return answ
 
-    def _getVal(self, node, tag):
+    def _get_val(self, node, tag):
         return node.getElementsByTagName(tag)[0].firstChild.nodeValue
 
-    def _parseUrl(self, url):
+    def _parse_url(self, url):
         return minidom.parse(urllib2.urlopen(url))
 
     def _exit(self, msg):
