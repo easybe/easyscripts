@@ -2,23 +2,44 @@
 
 # easyb 2011
 
+usage () {
+  echo "usage: $(basename $0) OLD NEW [-s|-w] [-f \"FILE(S)\"]"
+}
+
 if [ $# -lt 2 ]; then
-    echo "usage: `basename $0` OLD NEW [-s|-w] [-f FILE]"
-    exit
+    usage
+    exit 1
 fi
 
 old=$1
 shift
 new=$1
 shift
-echo "$@" | grep -q "\-s"
-[ $? -eq 0 ] && sim="true"
-echo "$@" | grep -q "\-w"
-[ $? -eq 0 ] && word="true"
-echo "$@" | grep -q "\-f"
-if [ $? -eq 0 ]; then
-    files=$(echo "$@" | sed -r 's:.*-f ([[:alnum:]\/\.]+).*:\1:g' 2>/dev/null)
-else
+
+files=""
+while getopts ":hswf:" option; do
+    case "$option" in
+        f)  files="$OPTARG"
+            ;;
+        s)  sim="true"
+            ;;
+        w)  word="true"
+            ;;
+        h)  usage
+            exit 0
+            ;;
+        :)  echo "Error: -$option requires an argument"
+            usage
+            exit 1
+            ;;
+        ?)  echo "Error: unknown option -$option"
+            usage
+            exit 1
+            ;;
+    esac
+done
+
+if [ -z "$files" ]; then
     files=$(find . -type f \( ! -regex '.*/\..*' \) \( ! -regex '.*/#.*' \) | \
         xargs grep $([ $word ] && echo "-w") -I -l $old 2>/dev/null)
 fi
