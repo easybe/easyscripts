@@ -2,7 +2,7 @@
 
 """Interactive CamleCase to lower_case conversion
 
-easyb 2012
+easyb 2012-2014
 """
 
 import os
@@ -28,6 +28,8 @@ class Main(object):
                           help="process all files")
         parser.add_option("-f", "--files", dest="files", action="append",
                           help="files to process")
+        parser.add_option("-p", "--python-mode", dest="pythonMode", action="store_true",
+                          help="proccess Python files according to PEP 8")
 
         self._options, args = parser.parse_args(argv)
 
@@ -79,6 +81,8 @@ class Main(object):
 
                 for name in names:
                     if name.startswith("0x"):
+                        continue
+                    if self._options.pythonMode and name[0].isupper():
                         continue
                     if name in self._history:
                         newName = self._history[name]
