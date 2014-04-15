@@ -18,24 +18,24 @@ class Main(object):
         self._history = {}
 
         parser = optparse.OptionParser(add_help_option=True)
-        parser.add_option("-l", "--load-hist", dest="loadFilenames", action="append",
+        parser.add_option("-l", "--load-hist", dest="load_filenames", action="append",
                           help="a history file which will be used")
-        parser.add_option("-i", "--ignore-file", dest="ignoreFilenames", action="append",
+        parser.add_option("-i", "--ignore-file", dest="ignore_filenames", action="append",
                           help="file with names to ignore")
-        parser.add_option("-d", "--dump-hist", dest="dumpFilename",
+        parser.add_option("-d", "--dump-hist", dest="dump_filename",
                           help="file to dump history to")
         parser.add_option("-a", "--all-files", dest="all", action="store_true",
                           help="process all files")
         parser.add_option("-f", "--files", dest="files", action="append",
                           help="files to process")
-        parser.add_option("-p", "--python-mode", dest="pythonMode", action="store_true",
+        parser.add_option("-p", "--python-mode", dest="python_mode", action="store_true",
                           help="proccess Python files according to PEP 8")
 
         self._options, args = parser.parse_args(argv)
 
     def run(self):
 
-        self._loadHistory()
+        self._load_history()
 
         paths = []
 
@@ -52,11 +52,11 @@ class Main(object):
 
         answ = ''
         for path in paths:
-            fileName = os.path.basename(path)
-            if re.search(r'^[\.#_]', fileName):
+            file_name = os.path.basename(path)
+            if re.search(r'^[\.#_]', file_name):
                 continue
 
-            if re.search(r'^\w+$|(\.(sh|py|cpp|hpp|c|h|)$)', fileName) is None:
+            if re.search(r'^\w+$|(\.(sh|py|cpp|hpp|c|h|)$)', file_name) is None:
                 continue
 
             if not self._options.all:
@@ -70,92 +70,92 @@ class Main(object):
             elif answ != 'y':
                 continue
 
-            oldFile = open(path, 'r')
+            old_file = open(path, 'r')
             # Create temp file
-            fhTmp, pathTmp = tempfile.mkstemp()
-            newFile = open(pathTmp, 'w')
+            fh_tmp, path_tmp = tempfile.mkstemp()
+            new_file = open(path_tmp, 'w')
 
-            lineNumber = 1
-            for line in oldFile:
+            line_number = 1
+            for line in old_file:
                 names = filter(None, re.findall('(\w*[a-z][A-Z]\w*)*', line))
 
                 for name in names:
                     if name.startswith("0x"):
                         continue
-                    if self._options.pythonMode and name[0].isupper():
+                    if self._options.python_mode and name[0].isupper():
                         continue
                     if name in self._history:
-                        newName = self._history[name]
+                        new_name = self._history[name]
                         answ = 'y'
                     else:
-                        newName = self._convert(name)
+                        new_name = self._convert(name)
                         answ = ''
                         while not (answ == 'y' or answ == 'n'):
-                            print "{0}: {1}".format(lineNumber, line)
+                            print "{0}: {1}".format(line_number, line)
                             answ = raw_input(
                                 "Replace {0} with {1} (y, n, e, l) [y]: "
-                                .format(name, newName))
+                                .format(name, new_name))
 
                             if answ == 'e':
-                                tmpName = newName
-                                tmpName = raw_input(
+                                tmp_name = new_name
+                                tmp_name = raw_input(
                                     "Enter the new name [{0}]: "
-                                    .format(newName))
-                                if tmpName:
-                                    newName = tmpName
+                                    .format(new_name))
+                                if tmp_name:
+                                    new_name = tmp_name
                                 answ = 'y'
 
                             elif not answ:
                                 answ = 'y'
 
                     if answ == 'y':
-                        self._history[name] = newName
-                        line = line.replace(name, newName)
+                        self._history[name] = new_name
+                        line = line.replace(name, new_name)
                     else:
                         self._history[name] = name
 
-                newFile.write(line)
-                lineNumber += 1
+                new_file.write(line)
+                line_number += 1
 
-            newFile.close()
-            os.close(fhTmp)
-            oldFile.close()
+            new_file.close()
+            os.close(fh_tmp)
+            old_file.close()
             mode = os.stat(path).st_mode & 0777
-            os.chmod(pathTmp, mode)
+            os.chmod(path_tmp, mode)
             # Remove original file
             os.remove(path)
             # Move new file
-            shutil.move(pathTmp, path)
+            shutil.move(path_tmp, path)
 
-        if self._options.dumpFilename:
-            self._dumpHistory()
+        if self._options.dump_filename:
+            self._dump_history()
 
         print "done"
 
-    def _loadHistory(self):
-        if self._options.loadFilenames is not None:
-            for filename in self._options.loadFilenames:
-                histFile = open(filename, 'r')
-                for line in histFile:
+    def _load_history(self):
+        if self._options.load_filenames is not None:
+            for filename in self._options.load_filenames:
+                hist_file = open(filename, 'r')
+                for line in hist_file:
                     (key, _, val) = line.rstrip('\n').partition(':')
                     if val:
                         self._history[key] = val
-                histFile.close()
+                hist_file.close()
 
-        if self._options.ignoreFilenames is not None:
-            for filename in self._options.ignoreFilenames:
-                ignoreFile = open(filename, 'r')
-                for line in ignoreFile:
+        if self._options.ignore_filenames is not None:
+            for filename in self._options.ignore_filenames:
+                ignore_file = open(filename, 'r')
+                for line in ignore_file:
                     name = line.rstrip('\n')
                     if name:
                         self._history[name] = name
-                ignoreFile.close()
+                ignore_file.close()
 
-    def _dumpHistory(self):
-        dumpFile = open(self._options.dumpFilename, 'w')
+    def _dump_history(self):
+        dump_file = open(self._options.dump_filename, 'w')
 
         for k, v in sorted(self._history.iteritems()):
-            dumpFile.write(k + ':' + v + '\n')
+            dump_file.write(k + ':' + v + '\n')
 
     def _convert(self, name):
         s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
