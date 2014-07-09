@@ -84,7 +84,7 @@ class Main(object):
         self._rename()
 
     def _fetch_shows(self):
-        info_url = "http://www.tvrage.com/feeds/search.php?show="
+        info_url = "http://services.tvrage.com/feeds/search.php?show="
 
         xml_doc = self._parse_url(info_url + self._search_str)
         self._shows = xml_doc.getElementsByTagName("show")
@@ -92,7 +92,7 @@ class Main(object):
             self._exit("Could not find requested show")
 
     def _fetch_episode_names(self):
-        ep_url = "http://www.tvrage.com/feeds/episode_list.php?sid="
+        ep_url = "http://services.tvrage.com/feeds/episode_list.php?sid="
 
         show_id = self._get_val(self._show, "showid")
         xml_doc = self._parse_url(ep_url + show_id)
