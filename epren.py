@@ -129,9 +129,13 @@ class Main(object):
         for file in files:
             m = re.search('[Ss](\d+)[Ee](\d+)', file)
             if not m:
-                m = re.search('(\d+)x(\d+)', file)
+                m = re.search('(\d+)[Xx](\d+)', file)
             if not m:
                 m = re.search('^(\d+)(\d{2})', file)
+            if not m:
+                m = re.search('\.(\d+)(\d{2})\.', file)
+            if not m:
+                m = re.search('(?:Season|Series) (\d+).*Episode (\d+)', file)
             if m:
                 key = "{0:d}{1:02d}".format(int(m.group(1)), int(m.group(2)))
                 ext = re.search('(\.\w*)$', file).group(1)
