@@ -1,20 +1,16 @@
 #!/usr/bin/env python
-# Requires Python 2.6 or newer
-
 """Episode Rename
 
-Renames TV episode with a little help of tvrage.com
+Batch renames TV episodes
 
-easyb 2012
+easyb
 """
 
 import sys
 import re
 import os
-import urllib
-import urllib2
 import optparse
-from xml.dom import minidom
+import tvdb_api
 
 
 class Main(object):
@@ -41,11 +37,11 @@ class Main(object):
             self._path = os.getcwdu()
 
         if remainder:
-            self._search_str = urllib.quote(" ".join(remainder))
+            self._search_str = " ".join(remainder)
         elif self._path:
             info = self._get_info_from_path()
             if info:
-                self._search_str = urllib.quote(" ".join(info[0]))
+                self._search_str = info[0]
                 self._season_no = info[1]
             else:
                 parser.print_help()
@@ -54,10 +50,13 @@ class Main(object):
         if self._dry:
             print "*** Dry run requested ***"
 
+        self._tvdb = tvdb_api.Tvdb()
+
     def run(self):
-        self._fetch_shows()
-        self._show = self._shows[0]
-        show_name = self._get_val(self._show, "name")
+        results = self._tvdb.search(self._search_str)
+        if len(results) == 0:
+            self._exit("Could not find requested show")
+        show_name = results[0]['seriesname']
         answ = 'n'
         if self._season_no is not None:
             answ = self._prompt("Rename '{0}' season {1:d} ?".format(
@@ -65,63 +64,35 @@ class Main(object):
 
         while answ != 'y':
             i = 0
-            for show in self._shows:
-                name = self._get_val(show, "name")
+            for result in results:
+                name = result['seriesname']
                 print u"[{0:d}] {1}".format(i, name)
                 i += 1
             print "[q] Never mind..."
-
             show_index = self._prompt_for_number("Select a show")
-            self._show = self._shows[show_index]
-            show_name = self._get_val(self._show, "name")
-            season_count = self._get_val(self._show, "seasons")
+            choice = results[show_index]
+            show_name = choice['seriesname']
+            latest_season = self._tvdb[show_name].keys()[-1]
             self._season_no = self._prompt_for_number(
-                "Select a season", str(season_count))
+                "Select a season", latest_season)
             answ = self._prompt("Rename '{0}' season {1:d} ?".format(
                 show_name, self._season_no), 'y')
+
+        self._show_name = show_name
 
         self._fetch_episode_names()
         self._rename()
 
-    def _fetch_shows(self):
-        info_url = "http://services.tvrage.com/feeds/search.php?show="
-
-        xml_doc = self._parse_url(info_url + self._search_str)
-        self._shows = xml_doc.getElementsByTagName("show")
-        if len(self._shows) == 0:
-            self._exit("Could not find requested show")
-
     def _fetch_episode_names(self):
-        ep_url = "http://services.tvrage.com/feeds/episode_list.php?sid="
-
-        show_id = self._get_val(self._show, "showid")
-        xml_doc = self._parse_url(ep_url + show_id)
-
-        seasons = xml_doc.getElementsByTagName("Season")
-        if len(seasons) == 0:
-            self._exit("No season data available")
-
-        season = None
-        for s in seasons:
-            if s.hasAttribute("no"):
-                if int(s.getAttribute("no")) == self._season_no:
-                    season = s
-                    break;
-
-        if season is not None:
-            episodes = season.getElementsByTagName("episode")
-        else:
-            self._exit("No data for season {0:d} available".format(
-                self._season_no))
-
         self._names = dict()
-        for episode in episodes:
-            ep_num = int(self._get_val(episode, "seasonnum"))
-            number_str = "{0:d}{1:02d}".format(self._season_no, ep_num)
-            title = self._get_val(episode, "title")
+        for episode_no, episode in self._tvdb[
+                self._show_name][self._season_no].items():
+            number_str = "{0:d}{1:02d}".format(self._season_no, episode_no)
+            title = episode['episodename']
+            if not title:
+                continue
             title = re.sub('/', '-', title)
-            filename = number_str + " - " + title
-            self._names[number_str] = filename
+            self._names[number_str] = number_str + " - " + title
 
     def _rename(self):
         os.chdir(self._path)
@@ -170,12 +141,6 @@ class Main(object):
         answ = answ.strip()
 
         return answ
-
-    def _get_val(self, node, tag):
-        return node.getElementsByTagName(tag)[0].firstChild.nodeValue
-
-    def _parse_url(self, url):
-        return minidom.parse(urllib2.urlopen(url))
 
     def _exit(self, msg):
         print msg
