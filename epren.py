@@ -15,37 +15,27 @@ import tvdb_api
 
 class Main(object):
     def __init__(self, argv = None):
-        usage = "usage: %prog [options] [name of show]"
+        usage = "usage: %prog [OPTIONS] [PATH/TO/SHOW - Season X]"
         parser = optparse.OptionParser(usage=usage)
         parser.add_option("-d", "--dry-run",
                           dest="dry",
                           default=False,
-                          action="store_true",
-                          )
-        parser.add_option("-p", "--path",
-                          dest="path",
-                          metavar="DIRECTORY"
-                          )
-
+                          action="store_true")
         options, remainder = parser.parse_args()
         self._dry = options.dry
         self._season_no = None
 
-        if options.path:
-            self._path = unicode(os.path.abspath(options.path))
+        if remainder:
+            self._path = unicode(os.path.abspath(' '.join(remainder)))
         else:
             self._path = os.getcwdu()
 
-        if remainder:
-            self._search_str = " ".join(remainder)
-        elif self._path:
-            info = self._get_info_from_path()
-            if info:
-                self._search_str = info[0]
-                self._season_no = info[1]
-            else:
-                parser.print_help()
-                self._exit("")
+        m = re.search('(.*) - Season (\d*)', os.path.basename(self._path))
+        if m:
+            self._search_str = m.group(1)
+            self._season_no = int(m.group(2))
+        else:
+            self._exit("Could not detect show and season")
 
         if self._dry:
             print "*** Dry run requested ***"
@@ -72,9 +62,10 @@ class Main(object):
             show_index = self._prompt_for_number("Select a show")
             choice = results[show_index]
             show_name = choice['seriesname']
-            latest_season = self._tvdb[show_name].keys()[-1]
+            default_season = self._season_no if self._season_no else self._tvdb[
+                show_name].keys()[-1]
             self._season_no = self._prompt_for_number(
-                "Select a season", latest_season)
+                "Select a season", str(default_season))
             answ = self._prompt("Rename '{0}' season {1:d} ?".format(
                 show_name, self._season_no), 'y')
 
@@ -117,14 +108,6 @@ class Main(object):
                         print u"renaming '{0}' to '{1}'".format(file, name)
                         if not self._dry: os.rename(file, name)
 
-    def _get_info_from_path(self):
-        d = os.path.basename(self._path)
-        m = re.search('(.*) - Season (\d*)', d)
-        if m:
-            return (m.group(1), int(m.group(2)))
-
-        return None
-
     def _prompt_for_number(self, msg, default='0'):
         answ = ''
         while not answ.isdigit():
@@ -135,7 +118,7 @@ class Main(object):
     def _prompt(self, msg, default='y'):
         answ = raw_input("{0} [{1}]: ".format(msg, default))
         if answ == 'q':
-            self._exit("bye")
+            self._exit("Bye")
         if not answ:
             answ = default
         answ = answ.strip()
