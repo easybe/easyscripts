@@ -3,7 +3,7 @@
 # easyb 2011
 
 usage () {
-  echo "usage: $(basename $0) OLD NEW [-s|-w] [-f \"FILE(S)\"]"
+    echo "usage: $(basename $0) OLD NEW [-s|-w] [-f \"FILE(S)\"]"
 }
 
 if [ $# -lt 2 ]; then
