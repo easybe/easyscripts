@@ -49,7 +49,6 @@ for f in $files; do
     echo "${SIM}processing: $f"
 
     if [ -z "$sim" ]; then
-        mode=$(stat -c"%a" $f)
         if [ "$word" ]; then
             oldRE='\b'$old'\b'
             newRE="$new"
@@ -57,8 +56,6 @@ for f in $files; do
             oldRE="$old"
             newRE="$new"
         fi
-        sed "s:$oldRE:$newRE:g" "$f" >"$f.tmp" && \
-            mv "$f.tmp" "$f"
-        chmod $mode $f
+        sed -i.back "s:$oldRE:$newRE:g" "$f" && rm "$f.back"
     fi
 done
