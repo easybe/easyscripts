@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """Episode Rename
 
 Batch renames TV episodes
@@ -26,9 +26,9 @@ class Main(object):
         self._season_no = None
 
         if remainder:
-            self._path = unicode(os.path.abspath(' '.join(remainder)))
+            self._path = os.path.abspath(' '.join(remainder))
         else:
-            self._path = os.getcwdu()
+            self._path = os.getcwd()
 
         m = re.search('(.*) - Season (\d*)', os.path.basename(self._path))
         if m:
@@ -38,7 +38,7 @@ class Main(object):
             self._exit("Could not detect show and season")
 
         if self._dry:
-            print "*** Dry run requested ***"
+            print("*** Dry run requested ***")
 
         self._tvdb = tvdb_api.Tvdb()
 
@@ -56,9 +56,9 @@ class Main(object):
             i = 0
             for result in results:
                 name = result['seriesname']
-                print u"[{0:d}] {1}".format(i, name)
+                print("[{0:d}] {1}".format(i, name))
                 i += 1
-            print "[q] Never mind..."
+            print("[q] Never mind...")
             show_index = self._prompt_for_number("Select a show")
             choice = results[show_index]
             show_name = choice['seriesname']
@@ -76,8 +76,8 @@ class Main(object):
 
     def _fetch_episode_names(self):
         self._names = dict()
-        for episode_no, episode in self._tvdb[
-                self._show_name][self._season_no].items():
+        for episode_no, episode in list(self._tvdb[
+                self._show_name][self._season_no].items()):
             number_str = "{0:d}{1:02d}".format(self._season_no, episode_no)
             title = episode['episodename']
             if not title:
@@ -87,7 +87,7 @@ class Main(object):
 
     def _rename(self):
         os.chdir(self._path)
-        files = os.listdir(os.getcwdu())
+        files = os.listdir(os.getcwd())
         for file in files:
             m = re.search('[Ss](\d+)[Ee](\d+)', file)
             if not m:
@@ -117,7 +117,7 @@ class Main(object):
         return int(answ)
 
     def _prompt(self, msg, default='y'):
-        answ = raw_input("{0} [{1}]: ".format(msg, default))
+        answ = input("{0} [{1}]: ".format(msg, default))
         if answ == 'q':
             self._exit("Bye")
         if not answ:
@@ -127,7 +127,7 @@ class Main(object):
         return answ
 
     def _exit(self, msg):
-        print msg
+        print(msg)
         quit()
 
 if __name__ == "__main__":
