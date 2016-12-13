@@ -14,7 +14,7 @@ import tvdb_api
 
 
 class Main(object):
-    def __init__(self, argv = None):
+    def __init__(self, arg=None):
         usage = "usage: %prog [OPTIONS] [PATH/TO/SHOW - Season X]"
         parser = optparse.OptionParser(usage=usage)
         parser.add_option("-d", "--dry-run",
@@ -62,8 +62,8 @@ class Main(object):
             show_index = self._prompt_for_number("Select a show")
             choice = results[show_index]
             show_name = choice['seriesname']
-            default_season = self._season_no if self._season_no else self._tvdb[
-                show_name].keys()[-1]
+            default_season = self._season_no if self._season_no else list(
+                self._tvdb[show_name].keys())[-1]
             self._season_no = self._prompt_for_number(
                 "Select a season", str(default_season))
             answ = self._prompt("Rename '{0}' season {1:d} ?".format(
@@ -105,8 +105,9 @@ class Main(object):
                 if key in self._names:
                     name = self._names[key] + ext
                     if file != name:
-                        print u"renaming '{0}' to '{1}'".format(file, name)
-                        if not self._dry: os.rename(file, name)
+                        print("renaming '{0}' to '{1}'".format(file, name))
+                        if not self._dry:
+                            os.rename(file, name)
 
     def _prompt_for_number(self, msg, default='0'):
         answ = ''
