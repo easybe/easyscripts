@@ -11,6 +11,7 @@ import re
 import os
 import optparse
 import tvdb_api
+from glob import glob
 
 
 class Main(object):
@@ -87,7 +88,8 @@ class Main(object):
 
     def _rename(self):
         os.chdir(self._path)
-        files = os.listdir(os.getcwd())
+        files = glob('*')
+
         for file in files:
             m = re.search('[Ss](\d+)[Ee](\d+)', file)
             if not m:
