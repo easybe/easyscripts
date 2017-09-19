@@ -11,6 +11,8 @@ if [ $# -lt 2 ]; then
     exit 1
 fi
 
+uname -s | grep -q NT && sedargs="-b"
+
 old=$1
 shift
 new=$1
@@ -56,6 +58,6 @@ for f in $files; do
             oldRE="$old"
             newRE="$new"
         fi
-        sed -i.back "s:$oldRE:$newRE:g" "$f" && rm "$f.back"
+        sed -i.back $sedargs "s:$oldRE:$newRE:g" "$f" && rm "$f.back"
     fi
 done
