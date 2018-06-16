@@ -18,7 +18,7 @@ import sys
 import json
 import tempfile
 import shutil
-from argparse import ArgumentParser
+from argparse import ArgumentParser, RawTextHelpFormatter
 
 
 class Main(object):
@@ -27,24 +27,33 @@ class Main(object):
     def __init__(self):
         self._history = {}
 
-        parser = ArgumentParser()
+        help_text = "By default, every decision you make is recorded and "
+        help_text += "applied the next time\nyou run the program from the "
+        help_text += "same directory.\n"
+        help_text += "The default history file is: ./{}\n"
+        help_text += "Remove it to start over or edit it as you please!"
+        help_text = help_text.format(self.HIST_FILE)
+
+        parser = ArgumentParser(
+            description=help_text, formatter_class=RawTextHelpFormatter)
+
         parser.add_argument("-l", "--load-hist", dest="load_filenames",
                             action="append",
-                            help="a history file which will be used")
+                            help="history file(s) to load")
         parser.add_argument("-i", "--ignore-file", dest="ignore_filenames",
                             action="append",
-                            help="file with names to ignore")
+                            help="a list of names (one per line) to ignore")
         parser.add_argument("-d", "--dump-hist", dest="dump_filename",
                             help="file to dump history to")
         parser.add_argument("-a", "--all-files", dest="all",
                             action="store_true",
-                            help="process all files")
+                            help="process all files in tree")
         parser.add_argument("-f", "--files", dest="files",
                             action="append",
                             help="files to process")
         parser.add_argument("-p", "--python-mode", dest="python_mode",
                             action="store_true",
-                            help="proccess Python files according to PEP 8")
+                            help="process Python files according to PEP 8")
 
         self._args = parser.parse_args()
 
