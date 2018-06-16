@@ -15,6 +15,7 @@ DISCLAIMER: THE WORKS ARE WITHOUT WARRANTY.
 import os
 import re
 import sys
+import json
 import tempfile
 import shutil
 import optparse
@@ -158,10 +159,7 @@ class Main(object):
         for filename in filenames:
             if os.path.isfile(filename):
                 with open(filename, 'r') as hist_file:
-                    for line in hist_file:
-                        (key, _, val) = line.rstrip('\n').partition(':')
-                        if val:
-                            self._history[key] = val
+                    self._history.update(json.load(hist_file))
 
         if self._options.ignore_filenames is not None:
             for filename in self._options.ignore_filenames:
@@ -177,10 +175,8 @@ class Main(object):
         if self._options.dump_filename is not None:
             dump_filename = self._options.dump_filename
 
-        dump_file = open(dump_filename, 'w')
-
-        for k, v in sorted(self._history.iteritems()):
-            dump_file.write(k + ':' + v + '\n')
+        with open(dump_filename, 'w') as dump_file:
+            json.dump(self._history, dump_file, indent=4)
 
 
 if __name__ == "__main__":
