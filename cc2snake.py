@@ -99,7 +99,8 @@ class Main(object):
                         new_name = self._history[name]
                         answ = 'y'
                     else:
-                        new_name = self._convert(name)
+                        new_name = re.sub(
+                            '([a-z0-9])([A-Z])', r'\1_\2', name).lower()
                         answ = ''
                         while not (answ == 'y' or answ == 'n'):
                             print("{0}: {1}".format(line_number, line))
@@ -165,10 +166,6 @@ class Main(object):
 
         for k, v in sorted(self._history.iteritems()):
             dump_file.write(k + ':' + v + '\n')
-
-    def _convert(self, name):
-        s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
-        return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
 
 
 if __name__ == "__main__":
