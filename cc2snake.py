@@ -31,8 +31,10 @@ class Main(object):
         help_text += "applied the next time\nyou run the program from the "
         help_text += "same directory.\n"
         help_text += "The default history file is: ./{}\n"
-        help_text += "Remove it to start over or edit it as you please!"
-        help_text = help_text.format(self.HIST_FILE)
+        help_text += "Remove it to start over or edit it as you please!\n"
+        help_text += "To automatically convert all files in tree run: {} -ya"
+        help_text = help_text.format(self.HIST_FILE,
+                                     os.path.basename(sys.argv[0]))
 
         parser = ArgumentParser(
             description=help_text, formatter_class=RawTextHelpFormatter)
@@ -54,6 +56,13 @@ class Main(object):
         parser.add_argument("-p", "--python-mode", dest="python_mode",
                             action="store_true",
                             help="process Python files according to PEP 8")
+        parser.add_argument("-y", "--yes", dest="yes",
+                            action="store_true",
+                            help="convert everything")
+        parser.add_argument("-n", "--no", dest="no",
+                            action="store_true",
+                            help="don't convert anything (create history file "
+                            "for manual editing)")
 
         self._args = parser.parse_args()
 
@@ -122,7 +131,13 @@ class Main(object):
                     else:
                         new_name = re.sub(
                             '([a-z0-9])([A-Z])', r'\1_\2', name).lower()
+
                         answ = ''
+                        if self._args.yes:
+                            answ = 'y'
+                        elif self._args.no:
+                            answ = 'no'
+
                         while not (answ == 'y' or answ == 'n'):
                             print("{0}: {1}".format(line_number, line))
                             answ = input(
