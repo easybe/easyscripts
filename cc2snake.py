@@ -1,8 +1,15 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
-"""Interactive CamleCase to lower_case conversion
+"""Interactive camleCase to snake_case conversion tool
 
-easyb 2012-2014
+Copyright © 2018 Ezra Bühler
+
+Usage of the works is permitted provided that this instrument is retained with
+the works, so that any entity that uses the works is notified of this
+instrument.
+
+DISCLAIMER: THE WORKS ARE WITHOUT WARRANTY.
 """
 
 import os
