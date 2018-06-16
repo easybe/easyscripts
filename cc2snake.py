@@ -18,41 +18,43 @@ import sys
 import json
 import tempfile
 import shutil
-import optparse
+from argparse import ArgumentParser
 
 
 class Main(object):
     HIST_FILE = ".cc2snake_history"
 
-    def __init__(self, argv=None):
+    def __init__(self):
         self._history = {}
 
-        parser = optparse.OptionParser(add_help_option=True)
-        parser.add_option("-l", "--load-hist", dest="load_filenames",
-                          action="append",
-                          help="a history file which will be used")
-        parser.add_option("-i", "--ignore-file", dest="ignore_filenames",
-                          action="append",
-                          help="file with names to ignore")
-        parser.add_option("-d", "--dump-hist", dest="dump_filename",
-                          help="file to dump history to")
-        parser.add_option("-a", "--all-files", dest="all", action="store_true",
-                          help="process all files")
-        parser.add_option("-f", "--files", dest="files", action="append",
-                          help="files to process")
-        parser.add_option("-p", "--python-mode", dest="python_mode",
-                          action="store_true",
-                          help="proccess Python files according to PEP 8")
+        parser = ArgumentParser()
+        parser.add_argument("-l", "--load-hist", dest="load_filenames",
+                            action="append",
+                            help="a history file which will be used")
+        parser.add_argument("-i", "--ignore-file", dest="ignore_filenames",
+                            action="append",
+                            help="file with names to ignore")
+        parser.add_argument("-d", "--dump-hist", dest="dump_filename",
+                            help="file to dump history to")
+        parser.add_argument("-a", "--all-files", dest="all",
+                            action="store_true",
+                            help="process all files")
+        parser.add_argument("-f", "--files", dest="files",
+                            action="append",
+                            help="files to process")
+        parser.add_argument("-p", "--python-mode", dest="python_mode",
+                            action="store_true",
+                            help="proccess Python files according to PEP 8")
 
-        self._options, args = parser.parse_args(argv)
+        self._args = parser.parse_args()
 
     def run(self):
         self._load_history()
 
         paths = []
 
-        if self._options.files:
-            paths += self._options.files
+        if self._args.files:
+            paths += self._args.files
         else:
             cwd = os.getcwd()
             for root, dirnames, filenames in os.walk(cwd):
@@ -72,7 +74,7 @@ class Main(object):
                          file_name) is None:
                 continue
 
-            if not self._options.all:
+            if not self._args.all:
                 answ = input("Edit {0} ?\n(y, n, q) [y]: ".format(path))
 
             if not answ:
@@ -103,7 +105,7 @@ class Main(object):
                 for name in names:
                     if name.startswith("0x"):
                         continue
-                    if self._options.python_mode and name[0].isupper():
+                    if self._args.python_mode and name[0].isupper():
                         continue
                     if name in self._history:
                         new_name = self._history[name]
@@ -153,16 +155,16 @@ class Main(object):
 
     def _load_history(self):
         filenames = [self.HIST_FILE]
-        if self._options.load_filenames is not None:
-            filenames = self._options.load_filenames
+        if self._args.load_filenames is not None:
+            filenames = self._args.load_filenames
 
         for filename in filenames:
             if os.path.isfile(filename):
                 with open(filename, 'r') as hist_file:
                     self._history.update(json.load(hist_file))
 
-        if self._options.ignore_filenames is not None:
-            for filename in self._options.ignore_filenames:
+        if self._args.ignore_filenames is not None:
+            for filename in self._args.ignore_filenames:
                 ignore_file = open(filename, 'r')
                 for line in ignore_file:
                     name = line.rstrip('\n')
@@ -172,8 +174,8 @@ class Main(object):
 
     def _dump_history(self):
         dump_filename = self.HIST_FILE
-        if self._options.dump_filename is not None:
-            dump_filename = self._options.dump_filename
+        if self._args.dump_filename is not None:
+            dump_filename = self._args.dump_filename
 
         with open(dump_filename, 'w') as dump_file:
             json.dump(self._history, dump_file, indent=4)
