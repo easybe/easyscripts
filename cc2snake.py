@@ -126,7 +126,7 @@ class Main(object):
 
             line_number = 1
             for line in old_file:
-                names = filter(None, re.findall('(\w*[a-z][A-Z]\w*)*', line))
+                names = filter(None, re.findall('(\w*[a-z0-9][A-Z]\w*)*', line))
 
                 for name in names:
                     if name.startswith("0x"):
