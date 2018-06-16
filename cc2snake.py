@@ -63,7 +63,7 @@ class Main(object):
                 continue
 
             if not self._options.all:
-                answ = raw_input("Edit {0} ?\n(y, n, q) [y]: ".format(path))
+                answ = input("Edit {0} ?\n(y, n, q) [y]: ".format(path))
 
             if not answ:
                 answ = 'y'
@@ -94,14 +94,14 @@ class Main(object):
                         new_name = self._convert(name)
                         answ = ''
                         while not (answ == 'y' or answ == 'n'):
-                            print "{0}: {1}".format(line_number, line)
-                            answ = raw_input(
+                            print("{0}: {1}".format(line_number, line))
+                            answ = input(
                                 "Replace {0} with {1} (y, n, e, l) [y]: "
                                 .format(name, new_name))
 
                             if answ == 'e':
                                 tmp_name = new_name
-                                tmp_name = raw_input(
+                                tmp_name = input(
                                     "Enter the new name [{0}]: "
                                     .format(new_name))
                                 if tmp_name:
@@ -133,7 +133,7 @@ class Main(object):
         if self._options.dump_filename:
             self._dump_history()
 
-        print "done"
+        print("done")
 
     def _load_history(self):
         if self._options.load_filenames is not None:
