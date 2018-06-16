@@ -147,7 +147,7 @@ class Main(object):
                             answ = 'no'
 
                         while not (answ == 'y' or answ == 'n'):
-                            print("{0}: {1}".format(line_number, line))
+                            print("\n{0}: {1}".format(line_number, line))
                             answ = input(
                                 "Replace {0} with {1} (y, n, e, l) [y]: "
                                 .format(name, new_name))
