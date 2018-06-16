@@ -73,10 +73,18 @@ class Main(object):
             elif answ != 'y':
                 continue
 
-            old_file = open(path, 'r')
-            # Create temp file
+            # Determine line endings
+            with open(path, 'rU') as f:
+                f.readline()
+                newline = f.newlines
+
+            # Create temp file by copying to preserve permissions
             fh_tmp, path_tmp = tempfile.mkstemp()
-            new_file = open(path_tmp, 'w')
+            os.close(fh_tmp)
+            shutil.copy(path, path_tmp)
+
+            new_file = open(path_tmp, 'w', newline=newline)
+            old_file = open(path, 'rU')
 
             line_number = 1
             for line in old_file:
@@ -121,10 +129,8 @@ class Main(object):
                 line_number += 1
 
             new_file.close()
-            os.close(fh_tmp)
             old_file.close()
-            mode = os.stat(path).st_mode & 0777
-            os.chmod(path_tmp, mode)
+
             # Remove original file
             os.remove(path)
             # Move new file
