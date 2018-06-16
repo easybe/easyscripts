@@ -23,6 +23,7 @@ from argparse import ArgumentParser, RawTextHelpFormatter
 
 class Main(object):
     HIST_FILE = ".cc2snake_history"
+    FILE_FILTER = r'^\w+$|(\.(sh|py|cpp|hpp|c|h|)$)'
 
     def __init__(self):
         self._history = {}
@@ -63,6 +64,10 @@ class Main(object):
                             action="store_true",
                             help="don't convert anything (create history file "
                             "for manual editing)")
+        parser.add_argument("--file-filter", dest="filter",
+                            help="only process files matching (Python) "
+                            "regular expression, default:\n    " +
+                            self.FILE_FILTER)
 
         self._args = parser.parse_args()
 
@@ -88,8 +93,11 @@ class Main(object):
             if re.search(r'^[\.#_]', file_name):
                 continue
 
-            if re.search(r'^\w+$|(\.(sh|py|cpp|hpp|c|h|)$)',
-                         file_name) is None:
+            file_filter = self.FILE_FILTER
+            if self._args.filter is not None:
+                file_filter = self._args.filter
+
+            if re.search(file_filter, file_name) is None:
                 continue
 
             if not self._args.all:
