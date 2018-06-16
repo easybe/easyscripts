@@ -21,6 +21,8 @@ import optparse
 
 
 class Main(object):
+    HIST_FILE = ".cc2snake_history"
+
     def __init__(self, argv=None):
         self._history = {}
 
@@ -144,20 +146,22 @@ class Main(object):
             # Move new file
             shutil.move(path_tmp, path)
 
-        if self._options.dump_filename:
-            self._dump_history()
+        self._dump_history()
 
         print("done")
 
     def _load_history(self):
+        filenames = [self.HIST_FILE]
         if self._options.load_filenames is not None:
-            for filename in self._options.load_filenames:
-                hist_file = open(filename, 'r')
-                for line in hist_file:
-                    (key, _, val) = line.rstrip('\n').partition(':')
-                    if val:
-                        self._history[key] = val
-                hist_file.close()
+            filenames = self._options.load_filenames
+
+        for filename in filenames:
+            if os.path.isfile(filename):
+                with open(filename, 'r') as hist_file:
+                    for line in hist_file:
+                        (key, _, val) = line.rstrip('\n').partition(':')
+                        if val:
+                            self._history[key] = val
 
         if self._options.ignore_filenames is not None:
             for filename in self._options.ignore_filenames:
@@ -169,7 +173,11 @@ class Main(object):
                 ignore_file.close()
 
     def _dump_history(self):
-        dump_file = open(self._options.dump_filename, 'w')
+        dump_filename = self.HIST_FILE
+        if self._options.dump_filename is not None:
+            dump_filename = self._options.dump_filename
+
+        dump_file = open(dump_filename, 'w')
 
         for k, v in sorted(self._history.iteritems()):
             dump_file.write(k + ':' + v + '\n')
