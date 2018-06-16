@@ -14,13 +14,15 @@ import optparse
 
 
 class Main(object):
-    def __init__(self, argv = None):
+    def __init__(self, argv=None):
         self._history = {}
 
         parser = optparse.OptionParser(add_help_option=True)
-        parser.add_option("-l", "--load-hist", dest="load_filenames", action="append",
+        parser.add_option("-l", "--load-hist", dest="load_filenames",
+                          action="append",
                           help="a history file which will be used")
-        parser.add_option("-i", "--ignore-file", dest="ignore_filenames", action="append",
+        parser.add_option("-i", "--ignore-file", dest="ignore_filenames",
+                          action="append",
                           help="file with names to ignore")
         parser.add_option("-d", "--dump-hist", dest="dump_filename",
                           help="file to dump history to")
@@ -28,13 +30,13 @@ class Main(object):
                           help="process all files")
         parser.add_option("-f", "--files", dest="files", action="append",
                           help="files to process")
-        parser.add_option("-p", "--python-mode", dest="python_mode", action="store_true",
+        parser.add_option("-p", "--python-mode", dest="python_mode",
+                          action="store_true",
                           help="proccess Python files according to PEP 8")
 
         self._options, args = parser.parse_args(argv)
 
     def run(self):
-
         self._load_history()
 
         paths = []
@@ -56,7 +58,8 @@ class Main(object):
             if re.search(r'^[\.#_]', file_name):
                 continue
 
-            if re.search(r'^\w+$|(\.(sh|py|cpp|hpp|c|h|)$)', file_name) is None:
+            if re.search(r'^\w+$|(\.(sh|py|cpp|hpp|c|h|)$)',
+                         file_name) is None:
                 continue
 
             if not self._options.all:
@@ -160,6 +163,7 @@ class Main(object):
     def _convert(self, name):
         s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
         return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
+
 
 if __name__ == "__main__":
     main = Main()
