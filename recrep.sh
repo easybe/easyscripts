@@ -1,5 +1,5 @@
 #!/bin/sh
-
+# SPDX-License-Identifier: MIT
 # easyb 2011
 
 usage () {

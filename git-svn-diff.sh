@@ -1,4 +1,6 @@
 #!/bin/sh
+# SPDX-License-Identifier: MIT
+
 # Generate an SVN-compatible diff against the tip of the tracking branch
 #
 # usage: git-svn-diff [git-diff-args] > an-svn.patch

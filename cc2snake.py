@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# SPDX-License-Identifier: MIT
 # -*- coding: utf-8 -*-
 """Interactive camleCase to snake_case conversion tool"""
 

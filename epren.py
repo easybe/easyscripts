@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: MIT
+
 """Episode Rename
 
 Batch renames TV episodes

@@ -1,4 +1,5 @@
 #!/bin/sh
+# SPDX-License-Identifier: MIT
 
 if [ $# -lt 2 ]; then
     echo "usage: `basename $0` OLD_PREFIX NEW_PREFIX [-s]"
