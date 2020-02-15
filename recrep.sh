@@ -1,6 +1,5 @@
 #!/bin/sh
 # SPDX-License-Identifier: MIT
-# easyb 2011
 
 usage () {
     echo "usage: $(basename $0) OLD NEW [-s|-w] [-f \"FILE(S)\"]"
@@ -51,13 +50,7 @@ for f in $files; do
     echo "${SIM}processing: $f"
 
     if [ -z "$sim" ]; then
-        if [ "$word" ]; then
-            oldRE='\b'$old'\b'
-            newRE="$new"
-        else
-            oldRE="$old"
-            newRE="$new"
-        fi
-        sed -i.back $sedargs "s:$oldRE:$newRE:g" "$f" && rm "$f.back"
+        [ "$word" ] && old='\b'$old'\b'
+        sed -i.back $sedargs "s:$old:$new:g" "$f" && rm "$f.back"
     fi
 done
