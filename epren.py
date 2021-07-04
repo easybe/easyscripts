@@ -18,7 +18,7 @@ from glob import glob
 
 class Main(object):
     def __init__(self, arg=None):
-        usage = "usage: %prog [OPTIONS] [PATH/TO/SHOW - Season X]"
+        usage = "usage: %prog [OPTIONS] [PATH/TO/SHOW/Season X]"
         parser = optparse.OptionParser(usage=usage)
         parser.add_option("-d", "--dry-run",
                           dest="dry",
@@ -33,10 +33,11 @@ class Main(object):
         else:
             self._path = os.getcwd()
 
-        m = re.search('(.*) - Season (\d*)', os.path.basename(self._path))
-        if m:
-            self._search_str = m.group(1)
-            self._season_no = int(m.group(2))
+        show_name = os.path.basename(os.path.dirname(self._path))
+        m = re.search('Season (\d*)', os.path.basename(self._path))
+        if show_name and m:
+            self._search_str = show_name
+            self._season_no = int(m.group(1))
         else:
             self._exit("Could not detect show and season")
 
