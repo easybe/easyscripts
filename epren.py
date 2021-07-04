@@ -43,13 +43,16 @@ class Main(object):
         if self._dry:
             print("*** Dry run requested ***")
 
-        self._tvdb = tvdb_api.Tvdb()
+        with open(os.path.expanduser("~/.tvdb_key")) as f:
+            apikey = f.read().strip()
+
+        self._tvdb = tvdb_api.Tvdb(apikey=apikey)
 
     def run(self):
         results = self._tvdb.search(self._search_str)
         if len(results) == 0:
             self._exit("Could not find requested show")
-        show_name = results[0]['seriesname']
+        show_name = results[0]['seriesName']
         answ = 'n'
         if self._season_no is not None:
             answ = self._prompt("Rename '{0}' season {1:d} ?".format(
@@ -58,13 +61,13 @@ class Main(object):
         while answ != 'y':
             i = 0
             for result in results:
-                name = result['seriesname']
+                name = result['seriesName']
                 print("[{0:d}] {1}".format(i, name))
                 i += 1
             print("[q] Never mind...")
             show_index = self._prompt_for_number("Select a show")
             choice = results[show_index]
-            show_name = choice['seriesname']
+            show_name = choice['seriesName']
             default_season = self._season_no if self._season_no else list(
                 self._tvdb[show_name].keys())[-1]
             self._season_no = self._prompt_for_number(
@@ -82,7 +85,7 @@ class Main(object):
         for episode_no, episode in list(self._tvdb[
                 self._show_name][self._season_no].items()):
             number_str = "{0:d}{1:02d}".format(self._season_no, episode_no)
-            title = episode['episodename']
+            title = episode['episodeName']
             if not title:
                 continue
             title = re.sub('/', '-', title)
