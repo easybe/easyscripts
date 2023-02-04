@@ -35,7 +35,7 @@ def receive_tiffs(serial):
             data += b
             if data.endswith(END):
                 ts = datetime.now().strftime("%Y%m%d%H%M%S")
-                filename = f"tdscap_{ts}.tiff"
+                filename = f"capture_{ts}.tiff"
                 print(f"Writing {filename}")
                 write_tiff(filename, data)
                 data = b''
