@@ -18,19 +18,19 @@ START = b'MM\0*'
 END = b'TIFF Driver 1.0\0'
 
 
-def configure(serial):
-    send_cmd(serial, b"HARDCopy:FORMat TIFf")
-    send_cmd(serial, b"HARDCopy:LAYout PORTRait")
-    send_cmd(serial, b"HARDCopy:PORT RS232")
-    send_cmd(serial, b"RS232:HARDFlagging OFF")
-    send_cmd(serial, b"RS232:SOFTFlagging OFF")
+def configure(serial_port):
+    send_cmd(serial_port, b"HARDCopy:FORMat TIFf")
+    send_cmd(serial_port, b"HARDCopy:LAYout PORTRait")
+    send_cmd(serial_port, b"HARDCopy:PORT RS232")
+    send_cmd(serial_port, b"RS232:HARDFlagging OFF")
+    send_cmd(serial_port, b"RS232:SOFTFlagging OFF")
 
 
-def receive_tiffs(serial):
+def receive_tiffs(serial_port):
     data = b''
 
     while True:
-        b = serial.read()
+        b = serial_port.read()
         if len(b):
             data += b
             if data.endswith(END):
@@ -51,20 +51,20 @@ def write_tiff(filename, data):
         f.write(data[start:])
 
 
-def send_cmd(serial, cmd):
-    serial.write(cmd + b"\r\n")
+def send_cmd(serial_port, cmd):
+    serial_port.write(cmd + b"\r\n")
 
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
         print(f"Usage: {sys.argv[0]} /dev/ttyxxx")
         exit(1)
-    serial = Serial(sys.argv[1], 19200, timeout=1)
-    configure(serial)
+    serial_port = Serial(sys.argv[1], 19200, timeout=1)
+    configure(serial_port)
     try:
-        receive_tiffs(serial)
+        receive_tiffs(serial_port)
     except KeyboardInterrupt:
         pass
     finally:
-        if serial:
-            serial.close()
+        if serial_port:
+            serial_port.close()
