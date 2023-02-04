@@ -28,17 +28,22 @@ def configure(serial_port):
 
 def receive_tiffs(serial_port):
     data = b''
+    receiving = False
 
     while True:
         b = serial_port.read()
         if len(b):
             data += b
+            if not receiving and START in data:
+                print(f"Receiving data...")
+                receiving = True
             if data.endswith(END):
                 ts = datetime.now().strftime("%Y%m%d%H%M%S")
                 filename = f"capture_{ts}.tiff"
-                print(f"Writing {filename}")
                 write_tiff(filename, data)
+                print(f"Screen capture saved to {filename}")
                 data = b''
+                receiving = False
 
 
 def write_tiff(filename, data):
@@ -61,10 +66,12 @@ if __name__ == '__main__':
         exit(1)
     serial_port = Serial(sys.argv[1], 19200, timeout=1)
     configure(serial_port)
+    print("Hi there, press the HARDCOPY button to capture the scope's screen.")
     try:
         receive_tiffs(serial_port)
     except KeyboardInterrupt:
         pass
     finally:
+        print("Bye, bye!")
         if serial_port:
             serial_port.close()
