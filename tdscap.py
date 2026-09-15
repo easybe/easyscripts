@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3 -u
 # SPDX-License-Identifier: MIT
 
 """Screen capture utility for old Tektronix oscilloscopes
@@ -32,12 +32,17 @@ def receive_tiffs(serial):
     while True:
         b = serial.read()
         if len(b):
+            if len(data) % 1000 == 0:
+                print('.', end='')
             data += b
             if data.endswith(END):
                 ts = datetime.now().strftime("%Y%m%d%H%M%S")
                 filename = f"tdscap_{ts}.tiff"
-                print(f"Writing {filename}")
-                write_tiff(filename, data)
+                print('')
+                if write_tiff(filename, data):
+                    print(f"Captured {filename}")
+                else:
+                    print("Incoplete TIFF data received")
                 data = b''
 
 
@@ -45,10 +50,10 @@ def write_tiff(filename, data):
     try:
         start = data.index(START)
     except ValueError:
-        print("Invalid data")
-        return
+        return False
     with open(filename, 'wb') as f:
         f.write(data[start:])
+    return True
 
 
 def send_cmd(serial, cmd):
@@ -61,6 +66,12 @@ if __name__ == '__main__':
         exit(1)
     serial = Serial(sys.argv[1], 19200, timeout=1)
     configure(serial)
+
+    print(
+        "Press the HARDCOPY button on your scope to start capturing, "
+        "hit Ctrl+C to quit."
+    )
+
     try:
         receive_tiffs(serial)
     except KeyboardInterrupt:
